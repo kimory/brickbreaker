@@ -6,7 +6,10 @@ var BRIQUE_HEIGHT = 15;
 var ESPACE_BRIQUE = 2; // espacement entre les briques en px
 var BARRE_JEU_WIDTH = 80; // largeur de la barre du jeu
 var BARRE_JEU_HEIGHT = 10; // hauteur de la barre de jeu
-var PXL_DEPLA = 4;
+var PXL_DEPLA = 8;
+var COULEUR_BALLE = "#16A6DB"; // bleu
+var DIMENSION_BALLE = 8; // diamètre
+var VITESSE_BALLE = 2;
 
 // Variables
 var tabBriques; // tableau virtuel contenant les briques
@@ -15,6 +18,11 @@ var barreY; // position en Y de la barre (ne bougera pas)
 var context;
 var zone_jeu_width;
 var zone_jeu_height;
+var balleX = 100;
+var balleY = 250;
+var dirBalleX = 1; // direction initiale en X
+var dirBalleY = -1; // direction initiale en Y
+var boucleJeu; // pour pouvoir arrêter le jeu quand le joueur perd
 
 // pour les couleurs des briques, générées aléatoirement
 var couleurs_briques = [];
@@ -50,7 +58,7 @@ window.addEventListener('load', function(){
 	context.fillRect(barreX, barreY, BARRE_JEU_WIDTH, BARRE_JEU_HEIGHT);
 
 	// boucle de rafraichissement du contexte 2D (timer JS)
-	idInterv = setInterval(refreshGame, 10); // tous les dixièmes de seconde
+	boucleJeu = setInterval(refreshGame, 10); // tous les dixièmes de seconde
 
 	// gestion des évènements
 	window.document.onkeydown = checkDepla;
@@ -89,6 +97,16 @@ function creerBriques(ctx, nbrLignes, nbrParLigne, largeur, hauteur, espace) {
 	
 }
 
+
+function perdu() {
+	clearInterval(boucleJeu); // on stoppe le jeu
+	alert("Perdu !");
+}
+
+function gagne() {
+	clearInterval(boucleJeu);
+	alert("Bravo, vous avez gagné !"); // on stoppe le jeu
+}
 // fonction pour rendre transparente une zone
 function clearContexte(ctx, startwidth, ctxwidth, startheight, ctxheight) {
 	ctx.clearRect(startwidth, startheight, ctxwidth, ctxheight);
@@ -130,5 +148,46 @@ function refreshGame() {
 	// Réaffichage de la barre de jeu
 	context.fillStyle = "#333333";
 	context.fillRect(barreX,barreY,BARRE_JEU_WIDTH,BARRE_JEU_HEIGHT);
+
+	// Calcul de la direction de la balle
+	if ((balleX + dirBalleX * VITESSE_BALLE) > zone_jeu_width){
+		dirBalleX = -1;
+	}
+	else{
+		if ((balleX + dirBalleX * VITESSE_BALLE) < 0){
+			dirBalleX = 1;
+		}
+	}
+	if ((balleY + dirBalleY * VITESSE_BALLE) > zone_jeu_height){
+		// la balle touche le bas de la zone
+		perdu();
+		//dirBalleY = -1;
+	}
+	else{
+		if ((balleY + dirBalleY * VITESSE_BALLE) < 0){
+			dirBalleY = 1;
+		}
+		else{
+			// rebond sur la barre
+			if ((balleY + dirBalleY * VITESSE_BALLE >= zone_jeu_height - BARRE_JEU_HEIGHT) &&
+				(balleX + dirBalleX * VITESSE_BALLE >= barreX) &&
+				(balleX + dirBalleX * VITESSE_BALLE <= barreX + BARRE_JEU_WIDTH)){
+				dirBalleY = -1;
+				// "bidouille" pour que la direction soit un peu différente
+				// selon le lieu de collision
+				dirBalleX = 2 * (balleX- (barreX + BARRE_JEU_WIDTH / 2)) / BARRE_JEU_WIDTH;
+			}
+		}
+	}
 	
+	// On fait avancer la balle
+	balleX += dirBalleX * VITESSE_BALLE;
+	balleY += dirBalleY * VITESSE_BALLE;
+	
+	// Affichage de la balle
+	context.fillStyle = COULEUR_BALLE;
+	context.beginPath();
+	context.arc(balleX, balleY, DIMENSION_BALLE, 0, Math.PI*2, true);
+	context.closePath();
+	context.fill();	
 }
