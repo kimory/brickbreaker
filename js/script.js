@@ -6,7 +6,7 @@ var BRIQUE_HEIGHT = 15;
 var ESPACE_BRIQUE = 2; // espacement entre les briques en px
 var BARRE_JEU_WIDTH = 80; // largeur de la barre du jeu
 var BARRE_JEU_HEIGHT = 10; // hauteur de la barre de jeu
-var PXL_DEPLA = 8;
+var PXL_DEPLA = 10; // "vitesse" de déplacement de la raquette
 var COULEUR_BALLE = "#16A6DB"; // bleu
 var DIMENSION_BALLE = 8; // diamètre
 var VITESSE_BALLE = 2;
@@ -23,6 +23,8 @@ var balleY = 250;
 var dirBalleX = 1; // direction initiale en X
 var dirBalleY = -1; // direction initiale en Y
 var boucleJeu; // pour pouvoir arrêter le jeu quand le joueur perd
+var limiteBriques = (ESPACE_BRIQUE+BRIQUE_HEIGHT)*NBR_LIGNES; // zone des briques
+var aGagne = 0; // pour détecter si le joueur a gagné
 
 // pour les couleurs des briques, générées aléatoirement
 var couleurs_briques = [];
@@ -31,6 +33,9 @@ for(var i = 0; i < NBR_LIGNES; i++){
 }
 
 window.addEventListener('load', function(){
+	// message de bienvenue
+	alert("Bienvenue sur le jeu de casse-briques !");	
+
 	// On récupère l'objet Canvas
 	var elem = document.getElementById('canvasElem');
 	if(!elem || !elem.getContext){
@@ -47,7 +52,7 @@ window.addEventListener('load', function(){
 	zone_jeu_width = elem.width;
 	zone_jeu_height = elem.height;
 	barreX = (zone_jeu_width/2)-(BARRE_JEU_WIDTH/2); // on calcule le centre du jeu
-	barreY= zone_jeu_height-BARRE_JEU_HEIGHT; // on calcule la position la plus basse pour la barre
+	barreY = zone_jeu_height-BARRE_JEU_HEIGHT; // on calcule la position la plus basse pour la barre
 
 	// le navigateur est compatible + le contexte a bien été récupéré
 	// on initialise le jeu
@@ -88,7 +93,6 @@ function creerBriques(ctx, nbrLignes, nbrParLigne, largeur, hauteur, espace) {
 			
 			// Tableau virtuel: On attribue à la case actuelle la valeur 1 = la brique existe encore
 			tabBriques[i][j] = 1;
-			
 		}
 	}
 	
@@ -136,14 +140,21 @@ function refreshGame() {
 	// on efface la zone
 	clearContexte(context, 0, zone_jeu_width, 0, zone_jeu_height);
 
+	aGagne = 1;
 	// Réaffichage des briques dont l'état = 1
 	for (var i=0; i < tabBriques.length; i++) {
 		context.fillStyle = couleurs_briques[i];
 		for (var j=0; j < tabBriques[i].length; j++) {
-			if (tabBriques[i][j] == 1)
-				context.fillRect((j*(BRIQUE_WIDTH+ESPACE_BRIQUE)),(i*(BRIQUE_HEIGHT+ESPACE_BRIQUE)),BRIQUE_WIDTH,BRIQUE_HEIGHT);
+			if (tabBriques[i][j] == 1){
+				context.fillRect((j*(BRIQUE_WIDTH+ESPACE_BRIQUE)),
+						(i*(BRIQUE_HEIGHT+ESPACE_BRIQUE)),BRIQUE_WIDTH,BRIQUE_HEIGHT);
+				aGagne = 0; // le joueur n'a pas gagné, il reste (au moins) 1 brique
+			}
 		}
 	}
+
+	// On vérifie si le joueur a gagné
+	if(aGagne) gagne();
 
 	// Réaffichage de la barre de jeu
 	context.fillStyle = "#333333";
@@ -179,6 +190,19 @@ function refreshGame() {
 			}
 		}
 	}
+	
+	// Test des collisions avec les briques (serait à optimiser)
+	if ( balleY <= limiteBriques) {
+		// On est dans la zone des briques
+		// on regarde le positionnement de la balle par rapport aux lignes de briques
+		var ligneY = Math.floor(balleY/(BRIQUE_HEIGHT+ESPACE_BRIQUE));
+		var ligneX = Math.floor(balleX/(BRIQUE_WIDTH+ESPACE_BRIQUE));
+		if ( tabBriques[ligneY][ligneX] == 1 ) {
+			// si la brique "touchée" existait encore :
+			tabBriques[ligneY][ligneX] = 0; // on la met à zéro
+			dirBalleY = 1; // on lance la balle dans l'autre direction
+		}
+	}	
 	
 	// On fait avancer la balle
 	balleX += dirBalleX * VITESSE_BALLE;
