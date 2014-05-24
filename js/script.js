@@ -6,7 +6,7 @@ var BRIQUE_HEIGHT = 15;
 var ESPACE_BRIQUE = 2; // espacement entre les briques en px
 var BARRE_JEU_WIDTH = 80; // largeur de la barre du jeu
 var BARRE_JEU_HEIGHT = 10; // hauteur de la barre de jeu
-var PXL_DEPLA = 10; // "vitesse" de déplacement de la raquette
+var PXL_DEPLA = 3; // "vitesse" de déplacement de la raquette
 var COULEUR_BALLE = "#16A6DB"; // bleu
 var DIMENSION_BALLE = 8; // diamètre
 var VITESSE_BALLE = 2;
@@ -25,6 +25,7 @@ var dirBalleY = -1; // direction initiale en Y
 var boucleJeu; // pour pouvoir arrêter le jeu quand le joueur perd
 var limiteBriques = (ESPACE_BRIQUE+BRIQUE_HEIGHT)*NBR_LIGNES; // zone des briques
 var aGagne = 0; // pour détecter si le joueur a gagné
+var keyNum = 0;
 
 // pour les couleurs des briques, générées aléatoirement
 var couleurs_briques = [];
@@ -66,7 +67,12 @@ window.addEventListener('load', function(){
 	boucleJeu = setInterval(refreshGame, 10); // tous les dixièmes de seconde
 
 	// gestion des évènements
-	window.document.onkeydown = checkDepla;
+	window.document.onkeydown = function(e) {
+		keyNum = e.keyCode;
+	};
+	window.document.onkeyup = function(e) {
+		keyNum = 0;
+	};
 
 }, false);
 
@@ -116,24 +122,6 @@ function clearContexte(ctx, startwidth, ctxwidth, startheight, ctxheight) {
 	ctx.clearRect(startwidth, startheight, ctxwidth, ctxheight);
 }
 
-// contrôle de la raquette
-function checkDepla(e){
-	// Touche "D" pressée
-	if (e.keyCode == 68){
-		// on ne déborde pas du cadre :
-		if((barreX + BARRE_JEU_WIDTH + PXL_DEPLA) <= zone_jeu_width){
-			barreX += PXL_DEPLA;
-		}
-	}
-	// Touche "Q" pressée
-	else if (e.keyCode == 81){
-		// on ne déborde pas du cadre :
-		if((barreX - PXL_DEPLA) >= 0){
-			barreX -= PXL_DEPLA;
-		}
-	}
-}
-
 // fonction pour "mettre à jour" les briques et la barre du jeu
 function refreshGame() {
 
@@ -156,7 +144,23 @@ function refreshGame() {
 	// On vérifie si le joueur a gagné
 	if(aGagne) gagne();
 
-	// Réaffichage de la barre de jeu
+	// contrôle de la raquette
+	// Touche "D" pressée
+	if (keyNum == 68){
+		// on ne déborde pas du cadre :
+		if((barreX + BARRE_JEU_WIDTH + PXL_DEPLA) <= zone_jeu_width){
+			barreX += PXL_DEPLA;
+		}
+	}
+	// Touche "Q" pressée
+	else if (keyNum == 81){
+		// on ne déborde pas du cadre :
+		if((barreX - PXL_DEPLA) >= 0){
+			barreX -= PXL_DEPLA;
+		}
+	}
+
+	// Réaffichage de la raquette
 	context.fillStyle = "#333333";
 	context.fillRect(barreX,barreY,BARRE_JEU_WIDTH,BARRE_JEU_HEIGHT);
 
