@@ -34,7 +34,7 @@ for(var i = 0; i < NBR_LIGNES; i++){
 
 window.addEventListener('load', function(){
 	// message de bienvenue
-	alert("Bienvenue sur le jeu de casse-briques !");	
+	alert("Bienvenue sur le jeu de casse-briques !\nUtilisez les touches \"Q\" et \"D\" pour déplacer la raquette.");	
 
 	// On récupère l'objet Canvas
 	var elem = document.getElementById('canvasElem');
@@ -118,15 +118,15 @@ function clearContexte(ctx, startwidth, ctxwidth, startheight, ctxheight) {
 
 // contrôle de la raquette
 function checkDepla(e){
-	// Flêche de droite pressée
-	if (e.keyCode == 39){
+	// Touche "D" pressée
+	if (e.keyCode == 68){
 		// on ne déborde pas du cadre :
 		if((barreX + BARRE_JEU_WIDTH + PXL_DEPLA) <= zone_jeu_width){
 			barreX += PXL_DEPLA;
 		}
 	}
-	// Flêche de gauche pressée
-	else if (e.keyCode == 37){
+	// Touche "Q" pressée
+	else if (e.keyCode == 81){
 		// on ne déborde pas du cadre :
 		if((barreX - PXL_DEPLA) >= 0){
 			barreX -= PXL_DEPLA;
@@ -162,11 +162,13 @@ function refreshGame() {
 
 	// Calcul de la direction de la balle
 	if ((balleX + dirBalleX * VITESSE_BALLE) > zone_jeu_width){
-		dirBalleX = -1;
+		//dirBalleX = -1;
+		dirBalleX = -dirBalleX; // on lance la balle dans la direction opposée (conserve le vecteur)
 	}
 	else{
 		if ((balleX + dirBalleX * VITESSE_BALLE) < 0){
-			dirBalleX = 1;
+			//dirBalleX = 1;
+			dirBalleX = -dirBalleX; // on lance la balle dans la direction opposée
 		}
 	}
 	if ((balleY + dirBalleY * VITESSE_BALLE) > zone_jeu_height){
@@ -200,7 +202,7 @@ function refreshGame() {
 		if ( tabBriques[ligneY][ligneX] == 1 ) {
 			// si la brique "touchée" existait encore :
 			tabBriques[ligneY][ligneX] = 0; // on la met à zéro
-			dirBalleY = 1; // on lance la balle dans l'autre direction
+			dirBalleY = -(dirBalleY); // on lance la balle dans l'autre direction
 		}
 	}	
 	
