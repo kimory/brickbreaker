@@ -29,8 +29,15 @@ var keyNum = 0;
 
 // pour les couleurs des briques, générées aléatoirement
 var couleurs_briques = [];
+var couleur_aleatoire;
 for(var i = 0; i < NBR_LIGNES; i++){
-	couleurs_briques.push("rgb("+Math.floor(Math.random()*256)+","+Math.floor(Math.random()*256)+","+Math.floor(Math.random()*256)+")");
+	do{
+		// on génère une couleur aléatoire (on ne veut pas de blanc, le cas échéant
+		// on rerentre dans la boucle jq'à ce qu'une autre couleur soit générée)
+		couleur_aleatoire = "rgb("+Math.floor(Math.random()*256)+","+Math.floor(Math.random()*256)+","+Math.floor(Math.random()*256)+")";
+	} while (couleur_aleatoire == "rgb(255,255,255)");
+
+	couleurs_briques.push(couleur_aleatoire);
 }
 
 window.addEventListener('load', function(){
